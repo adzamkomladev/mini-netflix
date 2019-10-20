@@ -1,7 +1,6 @@
 export const environment = {
   production: true,
-  moviesApiUrl: 'http://www.omdbapi.com/',
-  moviesApiKey: '91375bce',
+  moviesApiUrl: 'http://www.omdbapi.com/?apikey=91375bce',
   firebaseConfig: {
     apiKey: 'AIzaSyBg0y-0vbrtel1UArghw2pE7rNXXE44mWw',
     authDomain: 'mini-netfilx-ea024.firebaseapp.com',
