@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
+
 import { Observable } from 'rxjs';
-import { take, tap } from 'rxjs/operators';
+import { map, pluck } from 'rxjs/operators';
+
+import { environment } from 'src/environments/environment';
 
 import { Movie } from '../models/movie';
 
@@ -10,35 +12,39 @@ import { Movie } from '../models/movie';
   providedIn: 'root'
 })
 export class MovieService {
-  private readonly moviesUrl = `${environment.moviesApiUrl}&s=Aviatior`;
+  private readonly moviesUrl = `${environment.moviesApiUrl}&s=Aviator`;
 
-  private movies: Movie[];
+  private movies: Observable<Movie[]>;
 
   constructor(private http: HttpClient) {
-    this.movies = [];
-
-    this.http
-      .get<Movie[]>(this.moviesUrl)
-      .pipe(
-        take(1),
-        tap(movies => (this.movies = movies))
-      )
-      .subscribe();
+    this.movies = this.http
+      .get<{ Search: Movie[] }>(this.moviesUrl)
+      .pipe(pluck('Search'));
   }
 
-  getAll(): Movie[] {
+  getAll(): Observable<Movie[]> {
     return this.movies;
   }
 
-  get(imdbID: string): Movie | undefined {
-    return this.movies.find(movie => movie.imdbID === imdbID);
+  get(imdbID: string): Observable<Movie | undefined> {
+    return this.movies.pipe(
+      map(movies => movies.find(movie => movie.imdbID === imdbID))
+    );
   }
 
-  search(text: string): Movie[] {
-    return this.movies.filter(movie => movie.Title.includes(text));
+  search(text: string): Observable<Movie[]> {
+    return this.movies.pipe(
+      map(movies =>
+        movies.filter(movie =>
+          movie.Title.toLowerCase().includes(text.toLowerCase())
+        )
+      )
+    );
   }
 
-  filter(imdbIDs: string[]): Movie[] {
-    return this.movies.filter(movie => imdbIDs.includes(movie.imdbID));
+  filter(imdbIDs: string[]): Observable<Movie[]> {
+    return this.movies.pipe(
+      map(movies => movies.filter(movie => imdbIDs.includes(movie.imdbID)))
+    );
   }
 }
